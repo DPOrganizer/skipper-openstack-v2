@@ -27,12 +27,13 @@ module.exports = {
         username: 'my-user@example.com',
         password: 'MySecretPasswordHere1337',
         authUrl: 'https://auth.my.openstack.url.com:5000',
-        projectId: '<tenant id (md5 hash)>',
-		region: 'regionOne',
+        tenantId: '<tenant id (md5 hash)>',
+        region: 'regionOne',
       },
       fileEncryption: {
-        encrypt: crypto.createCipher(algorithm, password),
-        decrypt: crypto.createDecipher(algorithm, password);
+        enabled: true,
+        algorithm: 'aes-256-ctr',
+        password: 'super-secret-pw',
       },
     }, req.params.filename, res);
   },

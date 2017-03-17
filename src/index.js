@@ -1,5 +1,6 @@
 const pkgcloud = require('pkgcloud');
 const Writable = require('stream').Writable;
+const crypto = require('crypto');
 const debug = require('debug')('skipper-openstack-v2');
 
 const getClient = (credentials) => (
@@ -8,7 +9,7 @@ const getClient = (credentials) => (
 		username: credentials.username,
 		password: credentials.password,
 		authUrl: credentials.authUrl,
-		tenantId: credentials.projectId,
+		tenantId: credentials.tenantId,
 		region: credentials.region,
 		version: '2',
 	})
@@ -29,8 +30,9 @@ module.exports = function SwiftStore(globalOpts) {
 				remote: file,
 			});
 
-			if (options.fileEncryption && options.fileEncryption.decrypt) {
-				downloadStream = downloadStream.pipe(options.fileEncryption.decrypt);
+			if (options.fileEncryption && options.fileEncryption.enabled) {
+				const { algorithm, password } = options.fileEncryption;
+				downloadStream = downloadStream.pipe(crypto.createCipher(algorithm, password));
 			}
 
 			downloadStream.pipe(response);
@@ -59,28 +61,37 @@ module.exports = function SwiftStore(globalOpts) {
 			receiver._write = (newFile, encoding, done) => {
 				const client = getClient(options.credentials);
 
-				let fileStream = newFile;
-				if (options.fileEncryption && options.fileEncryption.encrypt) {
-					fileStream = fileStream.pipe(options.fileEncryption.encrypt);
+				const uploadCallback = (err) => {
+					if (err) {
+						debug('Error occurred during upload: %j', err);
+						receiver.emit('error', err);
+						return;
+					}
+
+					done();
+				};
+
+				// TODO: Investigate why .pipe(encrypt) cannot be assigned to variable
+				debug('Uploading file with name %s', newFile.filename);
+				if (options.fileEncryption && options.fileEncryption.enabled) {
+					const { algorithm, password } = options.fileEncryption;
+
+					newFile
+						.pipe(crypto.createCipher(algorithm, password))
+						.pipe(client.upload({
+							container: options.container,
+							remote: newFile.filename,
+						}, uploadCallback));
+				} else {
+					newFile
+						.pipe(client.upload({
+							container: options.container,
+							remote: newFile.filename,
+						}, uploadCallback));
 				}
 
-				debug('Uploading file with name %s', fileStream.filename);
-				fileStream
-					.pipe(client.upload({
-						container: options.container,
-						remote: fileStream.filename,
-					}, (err) => {
-						if (err) {
-							debug('Error occurred during upload: %j', err);
-							receiver.emit('error', err);
-							return;
-						}
-
-						done();
-					}));
-
-				fileStream.on('end', (err, value) => {
-					debug('Finished uploading %s', fileStream.filename);
+				newFile.on('end', (err, value) => {
+					debug('Finished uploading %s', newFile.filename);
 					receiver.emit('finish', err, value);
 					done();
 				});
