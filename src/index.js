@@ -14,13 +14,14 @@ const getClient = (credentials) => (
 	})
 );
 
-const getOptions = (globalOpts, options = {}) => Object.assign({}, globalOpts, options);
-
-module.exports = function SwiftStore(opts) {
-	const globalOpts = opts || {};
+module.exports = function SwiftStore(globalOpts) {
+	const getOptions = (options = {}) => (
+		Object.assign({}, globalOpts || {}, options)
+	);
 
 	const adapter = {
-		read(options, file, response) {
+		read(opts, file, response) {
+			const options = getOptions(opts);
 			const client = getClient(options.credentials);
 
 			let downloadStream = client.download({
@@ -36,19 +37,21 @@ module.exports = function SwiftStore(opts) {
 		},
 
 		rm(fd, callback) {
-			const options = getOptions(globalOpts);
+			const options = getOptions();
 			const client = getClient(options.credentials);
 
 			client.removeFile(options.container, fd, callback);
 		},
 
-		ls(options, callback) {
+		ls(opts, callback) {
+			const options = getOptions(opts);
 			const client = getClient(options.credentials);
 
 			client.getFiles(options.container, callback);
 		},
 
-		receive(options) {
+		receive(opts) {
+			const options = getOptions(opts);
 			const receiver = Writable({
 				objectMode: true,
 			});
@@ -68,7 +71,7 @@ module.exports = function SwiftStore(opts) {
 						remote: fileStream.filename,
 					}, (err) => {
 						if (err) {
-							debug(err);
+							debug('Error occurred during upload: %j', err);
 							receiver.emit('error', err);
 							return;
 						}
