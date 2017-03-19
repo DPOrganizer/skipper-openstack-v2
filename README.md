@@ -35,6 +35,7 @@ module.exports = {
         algorithm: 'aes-256-ctr',
         password: 'super-secret-pw',
       },
+      getFilename: (newFile) => newFile.fd,
     }, req.params.filename, res);
   },
 };

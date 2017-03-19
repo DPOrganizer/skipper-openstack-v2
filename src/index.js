@@ -17,7 +17,9 @@ const getClient = (credentials) => (
 
 module.exports = function SwiftStore(globalOpts) {
 	const getOptions = (options = {}) => (
-		Object.assign({}, globalOpts || {}, options)
+		Object.assign({
+			getFilename: (newFile) => newFile.filename,
+		}, globalOpts || {}, options)
 	);
 
 	const adapter = {
@@ -71,8 +73,10 @@ module.exports = function SwiftStore(globalOpts) {
 					done();
 				};
 
+				const filename = options.getFilename(newFile);
+
 				// TODO: Investigate why .pipe(encrypt) cannot be assigned to variable
-				debug('Uploading file with name %s', newFile.filename);
+				debug('Uploading file with name %s', filename);
 				if (options.fileEncryption && options.fileEncryption.enabled) {
 					const { algorithm, password } = options.fileEncryption;
 
@@ -80,18 +84,18 @@ module.exports = function SwiftStore(globalOpts) {
 						.pipe(crypto.createCipher(algorithm, password))
 						.pipe(client.upload({
 							container: options.container,
-							remote: newFile.filename,
+							remote: filename,
 						}, uploadCallback));
 				} else {
 					newFile
 						.pipe(client.upload({
 							container: options.container,
-							remote: newFile.filename,
+							remote: filename,
 						}, uploadCallback));
 				}
 
 				newFile.on('end', (err, value) => {
-					debug('Finished uploading %s', newFile.filename);
+					debug('Finished uploading %s', filename);
 					receiver.emit('finish', err, value);
 					done();
 				});
