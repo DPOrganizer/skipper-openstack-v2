@@ -23,7 +23,7 @@ module.exports = function SwiftStore(globalOpts) {
 	);
 
 	const adapter = {
-		read(opts, file, response) {
+		read(opts, file) {
 			const options = getOptions(opts);
 			const client = getClient(options.credentials);
 
@@ -37,7 +37,7 @@ module.exports = function SwiftStore(globalOpts) {
 				downloadStream = downloadStream.pipe(crypto.createCipher(algorithm, password));
 			}
 
-			return downloadStream.pipe(response);
+			return downloadStream;
 		},
 
 		rm(fd, callback) {
