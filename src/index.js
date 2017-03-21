@@ -37,7 +37,7 @@ module.exports = function SwiftStore(globalOpts) {
 				downloadStream = downloadStream.pipe(crypto.createCipher(algorithm, password));
 			}
 
-			downloadStream.pipe(response);
+			return downloadStream.pipe(response);
 		},
 
 		rm(fd, callback) {
