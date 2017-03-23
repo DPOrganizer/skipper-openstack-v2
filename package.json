@@ -1,6 +1,6 @@
 {
-  "name": "skipper-openstack",
-  "version": "1.0.0",
+  "name": "skipper-openstack-v2",
+  "version": "0.0.1",
   "main": "src/index.js",
   "repository": {
     "type": "git",
