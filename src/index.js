@@ -96,7 +96,7 @@ module.exports = function SwiftStore(globalOpts) {
 
 				newFile.on('end', (err, value) => {
 					debug('Finished uploading %s', filename);
-					receiver.emit('finish', err, value);
+					receiver.emit('writefile', newFile);
 					done();
 				});
 			};
