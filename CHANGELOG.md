@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 _Nothing_
 
+## 1.1.0 - 2019-07-31
+### Updated
+- Updated third party dependencies "pkgcloud" and "debug" to mitigate
+  known vulnerabilities.
+
 ## 1.0.0 - 2017-03-23
 
 Initial release
