@@ -33,8 +33,8 @@
     "pre-commit-hooks": "yarn run lint"
   },
   "dependencies": {
-    "debug": "2.6.3",
-    "pkgcloud": "1.4.0",
+    "debug": "^4.1.1",
+    "pkgcloud": "github:DPOrganizer/pkgcloud#088e42660dab2dd08307148e11716161d35b21b0",
     "stream": "0.0.2"
   },
   "devDependencies": {
