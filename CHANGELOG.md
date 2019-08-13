@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## 1.2.0 - 2019-08-13
 ### Updated
 - Reverted to use pkgcloud version 1.7.0, with updated deps
 
